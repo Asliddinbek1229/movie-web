@@ -4,10 +4,15 @@
             <AppInfo :allMoviesCount="movies.length"
                      :favoriteMoviesCount="movies.filter(movie => movie.favorite).length"/>
             <div class="search-panel">
-                <SearchPanel />
-                <AppFilter />
+                <SearchPanel :updateTermHandler="updateTermHandler"/>
+                <AppFilter :updateFilterHandler="updateFilterHandler" :filterName="filter"/>
             </div>
-            <MovieList :movies="movies" @onLike="onLikeHandler" @onDelete="onDeleteHandler"/>
+            <MovieList
+                :movies="onFilterHandler(onSearchHandler(movies, term), filter)"
+                @onLike="onLikeHandler"
+                @onDelete="onDeleteHandler"
+
+            />
             <MovieAddForm @createMovie="createMovie"/>
         </div>
     </div>
@@ -48,11 +53,13 @@ export default {
                 {
                     id: 3,
                     name: 'Sky Fall',
-                    view: 611,
+                    view: 101,
                     favorite: true,
                     like: true,
                 },
             ],
+          term: '',
+          filter: 'all',
         };
     },
     methods: {
@@ -85,6 +92,28 @@ export default {
             console.log('Deleted movie:', movie);
             console.log('Updated movies:', this.movies);
         },
+        onFilterHandler(arr, filter) {
+          switch (filter) {
+           case 'popular':
+             return arr.filter(c => c.favorite === true)
+           case 'mostViewers':
+             return arr.filter(c => c.view > 500)
+           default:
+             return arr
+          }
+        },
+        onSearchHandler(arr, term) {
+            if(term.length === 0) {
+              return arr;
+            }
+            return arr.filter(item => item.name.toLowerCase().indexOf(term) > -1);
+        },
+        updateTermHandler(term) {
+            this.term = term;
+        },
+        updateFilterHandler(filter) {
+          this.filter = filter;
+        }
     },
 };
 </script>

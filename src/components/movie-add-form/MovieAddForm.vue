@@ -16,7 +16,7 @@
                 v-model.number="viewers"
                 required
             />
-            <button class="btn btn-outline-dark" type="submit">Qo'shish</button>
+            <PrimaryButton class="btn-outline-dark" type="submit">Qo'shish</PrimaryButton>
         </form>
     </div>
 </template>
