@@ -2,16 +2,15 @@
     <div class="movie-add-form">
         <h3>Yangi kino qo'shish</h3>
         <form class="add-form d-flex" @submit.prevent="addMovie">
-            <input
-                type="text"
-                class="form-control new-movie-label"
+            <Input
+                class="new-movie-label"
                 placeholder="Qanday kino?"
-                v-model="name"
-                required
+                v-model.name="name"
+                @input="name = $event.target.value"
             />
-            <input
+            <Input
                 type="number"
-                class="form-control new-movie-label"
+                class="new-movie-label"
                 placeholder="Nechi marotaba ko'rilgan?"
                 v-model.number="viewers"
                 required
@@ -22,7 +21,10 @@
 </template>
 
 <script>
+import Input from "@/components/ui-components/Input.vue";
+
 export default {
+  components: {Input},
     data() {
         return {
             name: '',
