@@ -7,7 +7,14 @@
                 <SearchPanel :updateTermHandler="updateTermHandler"/>
                 <AppFilter :updateFilterHandler="updateFilterHandler" :filterName="filter"/>
             </div>
+            <Box v-if="!movies.length && !isLoading">
+              <p class="text-center text-danger fs-3">Kinolar mavjud emas</p>
+            </Box>
+            <Box v-else-if="isLoading">
+              <Loader />
+            </Box>
             <MovieList
+                v-else
                 :movies="onFilterHandler(onSearchHandler(movies, term), filter)"
                 @onLike="onLikeHandler"
                 @onDelete="onDeleteHandler"
@@ -25,9 +32,11 @@ import AppFilter from '@/components/app-filter/AppFilter.vue';
 import MovieList from '@/components/movie-list/MovieList.vue';
 import MovieAddForm from '@/components/movie-add-form/MovieAddForm.vue';
 import axios from "axios";
+import Loader from "@/components/ui-components/Loader.vue";
 
 export default {
     components: {
+      Loader,
         AppInfo,
         SearchPanel,
         AppFilter,
@@ -39,6 +48,7 @@ export default {
           movies: [],
           term: '',
           filter: 'all',
+          isLoading: false,
         };
     },
     methods: {
@@ -95,19 +105,25 @@ export default {
         },
         async fetchMovie() {
           try {
-            const {data} = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
-            const newArr = data.map(item => ({
-              id: item.id,
-              name: item.title,
-              like: false,
-              favorite: false,
-              view: item.id * 10,
-            }))
-            this.movies = newArr
+              this.isLoading = true
+              setTimeout(async () => {
+                const {data} = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
+                const newArr = data.map(item => ({
+                    id: item.id,
+                    name: item.title,
+                    like: false,
+                    favorite: false,
+                    view: item.id * 10,
+                }));
+                this.movies = newArr;
+                console.log('Movies fetched successfully:', newArr);
+                this.isLoading = false
+              }, 3000)
           } catch (error) {
-            alert(error.message)
+              console.error('Fetch error:', error.message);
+              alert('Ma\'lumotlarni yuklashda xatolik: ' + error.message);
           }
-        },
+      }
     },
   mounted() {
       this.fetchMovie()

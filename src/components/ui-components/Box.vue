@@ -13,6 +13,7 @@ export default {
 <style>
 .box {
   margin-bottom: 1rem;
+  margin-top: 1rem;
   padding: 1.5rem;
   border-radius: 4px;
   background-color: #fcfaf5;
