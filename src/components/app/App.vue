@@ -20,6 +20,27 @@
                 @onDelete="onDeleteHandler"
 
             />
+            <Box>
+              <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-center" >
+                  <li class="page-item" :class="{ disabled: page === 1 }">
+                    <a class="page-link" href="#" @click.prevent="changePageHandler(page - 1)">Oldinga</a>
+                  </li>
+                  <li
+                      class="page-item"
+                      v-for="pageNumber in totalPage"
+                      :key="pageNumber"
+                      :class="{active: pageNumber === page}"
+                      @click="changePageHandler(pageNumber)"
+                  >
+                    <a class="page-link" href="#">{{ pageNumber }}</a>
+                  </li>
+                  <li class="page-item" :class="{ disabled: page === totalPage }">
+                    <a class="page-link" href="#" @click.prevent="changePageHandler(page + 1)">Keyingi</a>
+                  </li>
+                </ul>
+              </nav>
+            </Box>
             <MovieAddForm @createMovie="createMovie"/>
         </div>
     </div>
@@ -49,22 +70,19 @@ export default {
           term: '',
           filter: 'all',
           isLoading: false,
+          limit: 10,
+          page: 1,
+          totalPage: 0,
         };
     },
     methods: {
-        createMovie(item) {
-            // Unikal ID generatsiya qilish
-            const maxId = this.movies.length > 0 ? Math.max(...this.movies.map(movie => movie.id)) : 0;
-            const newMovie = {
-                ...item,
-                id: maxId + 1, // Yangi unikal ID
-                favorite: item.favorite || false, // Agar favorite berilmagan bo'lsa, false
-                like: item.like || false, // Agar like berilmagan bo'lsa, false
-                view: item.view || 0, // Agar view berilmagan bo'lsa, 0
-            };
-            this.movies.push(newMovie);
-            console.log('Added movie:', newMovie);
-            console.log('Updated movies:', this.movies);
+        async createMovie(item) {
+          try {
+            const response = await axios.post('https://jsonplaceholder.typicode.com/posts', item)
+            this.movies.push(response.data)
+          } catch (error) {
+            alert(error.message)
+          }
         },
         onLikeHandler(id) {
             console.log('Like toggled for movie ID:', id);
@@ -107,23 +125,33 @@ export default {
           try {
               this.isLoading = true
               setTimeout(async () => {
-                const {data} = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
-                const newArr = data.map(item => ({
+                const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
+                  params: {
+                    _limit: this.limit,
+                    _page: this.page,
+                  },
+                })
+                const newArr = response.data.map(item => ({
                     id: item.id,
                     name: item.title,
                     like: false,
                     favorite: false,
                     view: item.id * 10,
                 }));
+                this.totalPage = Math.ceil(response.headers['x-total-count'] / this.limit)
                 this.movies = newArr;
-                console.log('Movies fetched successfully:', newArr);
                 this.isLoading = false
               }, 3000)
           } catch (error) {
-              console.error('Fetch error:', error.message);
               alert('Ma\'lumotlarni yuklashda xatolik: ' + error.message);
           }
-      }
+      },
+      changePageHandler(pageNumber) {
+        if (pageNumber >= 1 && pageNumber <= this.totalPage) {
+          this.page = pageNumber;
+          this.fetchMovie();
+        }
+      },
     },
   mounted() {
       this.fetchMovie()
